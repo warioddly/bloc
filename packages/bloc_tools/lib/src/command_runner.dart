@@ -1,5 +1,6 @@
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
+import 'package:bloc_tools/src/commands/commands.dart';
 import 'package:bloc_tools/src/version.dart';
 import 'package:io/ansi.dart';
 import 'package:io/io.dart';
@@ -18,11 +19,8 @@ class BlocToolsCommandRunner extends CommandRunner<int> {
       : _logger = logger ?? Logger(),
         _pubUpdater = pubUpdater ?? PubUpdater(),
         super('bloc', 'Command Line Tools for the Bloc Library.') {
-    argParser.addFlag(
-      'version',
-      negatable: false,
-      help: 'Print the current version.',
-    );
+    argParser.configure();
+    addCommand(NewCommand(logger: _logger));
   }
 
   final Logger _logger;
@@ -87,6 +85,16 @@ class BlocToolsCommandRunner extends CommandRunner<int> {
         }
       }
     } catch (_) {}
+  }
+}
+
+extension on ArgParser {
+  void configure() {
+    addFlag(
+      'version',
+      negatable: false,
+      help: 'Print the current version.',
+    );
   }
 }
 
