@@ -6,6 +6,14 @@ publish_to: none
 environment:
   sdk: ">=2.16.0 <3.0.0"
 
+dependencies:
+  cloud_firestore: ^3.1.10
+  fake_cloud_firestore: ^1.2.1
+  flutter:
+    sdk: flutter
+  todos_api:
+    path: ../todos_api
+ 
 dev_dependencies:
   coverage: ^1.1.0
   mocktail: ^0.2.0
