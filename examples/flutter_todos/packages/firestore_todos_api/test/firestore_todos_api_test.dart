@@ -89,13 +89,9 @@ void main() {
 
               final subject = createSubject();
 
-              expect(subject.getTodos(), emits(todos));
-
               expect(subject.saveTodo(newTodo), completes);
 
-              // todosCollection.add(newTodo);
-
-              // expect(subject.getTodos(), emits(newTodos));
+              expect(subject.getTodos(), emitsThrough(newTodos));
 
               // verify(
               //   () => plugin.setString(
