@@ -25,6 +25,7 @@ class FirestoreTodosApi implements TodosApi {
   /// a [Todo]
   @override
   Stream<List<Todo>> getTodos() {
+    print('called');
     return todosCollection.orderBy('id').snapshots().map(
           (snapshot) => snapshot.docs.map((e) => e.data()).toList(),
         );
@@ -39,11 +40,12 @@ class FirestoreTodosApi implements TodosApi {
     final check = await todosCollection.where('id', isEqualTo: todo.id).get();
 
     if (check.docs.isEmpty) {
-      final output =
-          todo.copyWith(id: Timestamp.now().millisecondsSinceEpoch.toString());
-
-      await todosCollection.add(output);
+      print('is empty');
+      // final output =
+      //     todo.copyWith(id: Timestamp.now().millisecondsSinceEpoch.toString());
+      await todosCollection.add(todo);
     } else {
+      print('is not empty');
       final currentTodoId = check.docs[0].reference.id;
       await todosCollection.doc(currentTodoId).update(todo.toJson());
     }

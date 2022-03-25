@@ -6,7 +6,8 @@ import 'package:test/test.dart';
 import 'package:todos_api/todos_api.dart';
 
 void main() {
-  late FirebaseFirestore firestore;
+  late FirebaseFirestore fakeFirestore;
+  late CollectionReference<Todo> todosCollection;
 
   group(
     'FirestoreTodosApi',
@@ -26,32 +27,33 @@ void main() {
           id: '3',
           title: 'title 3',
           description: 'description 3',
-          isCompleted: true,
         ),
       ];
 
-      setUp(
+      setUpAll(
         () {
-          firestore = FakeFirebaseFirestore();
+          fakeFirestore = FakeFirebaseFirestore();
 
-          final todosCollection = firestore.collection('todos');
+          todosCollection = fakeFirestore.collection('todos').withConverter(
+                fromFirestore: (snapshot, _) => Todo.fromJson(snapshot.data()!),
+                toFirestore: (todo, _) => todo.toJson(),
+              );
 
           for (final todo in todos) {
-            todosCollection.add(todo.toJson());
-            print('added');
+            todosCollection.add(todo);
           }
         },
       );
 
       FirestoreTodosApi createSubject() {
-        return FirestoreTodosApi(firestore: firestore);
+        return FirestoreTodosApi(firestore: fakeFirestore);
       }
 
       group(
         'constructor',
         () {
           test('can be instantiated', () {
-            expect(FirestoreTodosApi(firestore: firestore), isNotNull);
+            expect(FirestoreTodosApi(firestore: fakeFirestore), isNotNull);
           });
 
           group(
@@ -65,22 +67,8 @@ void main() {
                   expect(subject.getTodos(), emits(todos));
                 },
               );
-
-              test(
-                'succeeds with a save call',
-                () async {
-                  final subject = createSubject();
-                  expect(
-                    subject.saveTodo(
-                      Todo(title: 'test', description: 'test'),
-                    ),
-                    completes,
-                  );
-                },
-              );
-
               test('with empty list if no todos present', () {
-                firestore = FakeFirebaseFirestore();
+                fakeFirestore = FakeFirebaseFirestore();
 
                 final subject = createSubject();
 
@@ -88,6 +76,57 @@ void main() {
               });
             },
           );
+
+          group('saveTodo', () {
+            test('saves new todo', () {
+              final newTodo = Todo(
+                id: '4',
+                title: 'title 4',
+                description: 'description 4',
+              );
+
+              final newTodos = [...todos, newTodo];
+
+              final subject = createSubject();
+
+              expect(subject.getTodos(), emits(todos));
+
+              expect(subject.saveTodo(newTodo), completes);
+
+              // todosCollection.add(newTodo);
+
+              // expect(subject.getTodos(), emits(newTodos));
+
+              // verify(
+              //   () => plugin.setString(
+              //     LocalStorageTodosApi.kTodosCollectionKey,
+              //     json.encode(newTodos),
+              //   ),
+              // ).called(1);
+            });
+
+            test('updates existing todos', () {
+              final updatedTodo = Todo(
+                id: '1',
+                title: 'new title 1',
+                description: 'new description 1',
+                isCompleted: true,
+              );
+              final newTodos = [updatedTodo, ...todos.sublist(1)];
+
+              final subject = createSubject();
+
+              expect(subject.saveTodo(updatedTodo), completes);
+              expect(subject.getTodos(), emits(newTodos));
+
+              // verify(
+              //   () => plugin.setString(
+              //     LocalStorageTodosApi.kTodosCollectionKey,
+              //     json.encode(newTodos),
+              //   ),
+              // ).called(1);
+            });
+          });
         },
       );
     },
