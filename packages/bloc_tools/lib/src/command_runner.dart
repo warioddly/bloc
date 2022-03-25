@@ -21,6 +21,7 @@ class BlocToolsCommandRunner extends CommandRunner<int> {
         super('bloc', 'Command Line Tools for the Bloc Library.') {
     argParser.configure();
     addCommand(NewCommand(logger: _logger));
+    addCommand(UpdateCommand(logger: _logger, pubUpdater: _pubUpdater));
   }
 
   final Logger _logger;
@@ -69,20 +70,10 @@ class BlocToolsCommandRunner extends CommandRunner<int> {
           ..info('')
           ..info(
             '''
-+------------------------------------------------------------------------------------+
-|                                                                                    |
-|                    ${lightYellow.wrap('Update available!')} ${lightCyan.wrap(packageVersion)} \u2192 ${lightCyan.wrap(latestVersion)}                     |
-|  ${lightYellow.wrap('Changelog:')} ${lightCyan.wrap('https://github.com/felangel/bloc/releases/tag/$packageName-v$latestVersion')}  |
-|                                                                                    |
-+------------------------------------------------------------------------------------+
-''',
+${lightYellow.wrap('Update available!')} ${lightCyan.wrap(packageVersion)} \u2192 ${lightCyan.wrap(latestVersion)}
+${lightYellow.wrap('Changelog:')} ${lightCyan.wrap('https://github.com/felangel/bloc/releases/tag/$packageName-v$latestVersion')}
+Run ${cyan.wrap('bloc update')} to update''',
           );
-        final response = _logger.prompt('Would you like to update? (y/n) ');
-        if (response.isYes()) {
-          final updateDone = _logger.progress('Updating to $latestVersion');
-          await _pubUpdater.update(packageName: packageName);
-          updateDone('Updated to $latestVersion');
-        }
       }
     } catch (_) {}
   }
@@ -95,12 +86,5 @@ extension on ArgParser {
       negatable: false,
       help: 'Print the current version.',
     );
-  }
-}
-
-extension on String {
-  bool isYes() {
-    final normalized = toLowerCase().trim();
-    return normalized == 'y' || normalized == 'yes';
   }
 }

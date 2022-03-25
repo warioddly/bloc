@@ -28,19 +28,16 @@ const expectedUsage = [
       '    --version    Print the current version.\n'
       '\n'
       'Available commands:\n'
-      '  help   Display help information for bloc.\n'
+      '  new      Generate new components.\n'
+      '  update   Update bloc_tools.\n'
       '\n'
       'Run "bloc help <command>" for more information about a command.'
 ];
 
 final updatePrompt = '''
-+------------------------------------------------------------------------------------+
-|                                                                                    |
-|                    ${lightYellow.wrap('Update available!')} ${lightCyan.wrap(packageVersion)} \u2192 ${lightCyan.wrap(latestVersion)}                     |
-|  ${lightYellow.wrap('Changelog:')} ${lightCyan.wrap('https://github.com/felangel/bloc/releases/tag/$packageName-v$latestVersion')}  |
-|                                                                                    |
-+------------------------------------------------------------------------------------+
-''';
+${lightYellow.wrap('Update available!')} ${lightCyan.wrap(packageVersion)} \u2192 ${lightCyan.wrap(latestVersion)}
+${lightYellow.wrap('Changelog:')} ${lightCyan.wrap('https://github.com/felangel/bloc/releases/tag/$packageName-v$latestVersion')}
+Run ${cyan.wrap('bloc update')} to update''';
 
 const latestVersion = '0.0.0';
 
@@ -86,7 +83,7 @@ void main() {
     });
 
     group('run', () {
-      test('prompts for update when newer version exists', () async {
+      test('shows update prompt when newer version exists', () async {
         when(
           () => pubUpdater.getLatestVersion(any()),
         ).thenAnswer((_) async => latestVersion);
@@ -96,9 +93,6 @@ void main() {
         final result = await commandRunner.run(['--version']);
         expect(result, equals(ExitCode.success.code));
         verify(() => logger.info(updatePrompt)).called(1);
-        verify(
-          () => logger.prompt('Would you like to update? (y/n) '),
-        ).called(1);
       });
 
       test('handles pub update errors gracefully', () async {
@@ -109,19 +103,6 @@ void main() {
         final result = await commandRunner.run(['--version']);
         expect(result, equals(ExitCode.success.code));
         verifyNever(() => logger.info(updatePrompt));
-      });
-
-      test('updates on "y" response when newer version exists', () async {
-        when(
-          () => pubUpdater.getLatestVersion(any()),
-        ).thenAnswer((_) async => latestVersion);
-
-        when(() => logger.prompt(any())).thenReturn('y');
-        when(() => logger.progress(any())).thenReturn(([String? message]) {});
-
-        final result = await commandRunner.run(['--version']);
-        expect(result, equals(ExitCode.success.code));
-        verify(() => logger.progress('Updating to $latestVersion')).called(1);
       });
 
       test('handles FormatException', () async {
