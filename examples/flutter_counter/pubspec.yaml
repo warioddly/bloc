@@ -13,12 +13,17 @@ dependencies:
     path: ../../packages/bloc
   flutter_bloc:
     path: ../../packages/flutter_bloc
+  hydrated_bloc:
+    path: ../../packages/hydrated_bloc
+  path_provider: ^2.0.1
 
 dependency_overrides:
   bloc:
     path: ../../packages/bloc
   flutter_bloc:
     path: ../../packages/flutter_bloc
+  hydrated_bloc:
+    path: ../../packages/hydrated_bloc
   bloc_test:
     path: ../../packages/bloc_test
 
